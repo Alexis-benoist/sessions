@@ -1,5 +1,6 @@
 // load dependencies
 var express = require('express')
+var Sequelize = require('sequelize')
 var session = require('express-session');
 var http = require('http')
 
@@ -19,12 +20,33 @@ var http = require('http')
 //     res.send('welcome to the session demo. refresh!')
 //   }
 // })
+var SequelizeStore = require('connect-session-sequelize')(session.Store);
+
+var sequelize = new Sequelize(
+"database",
+"username",
+"password", {
+  "dialect": "sqlite",
+  "storage": "./session.sqlite"
+});
+
 var app = express()
+
+app.get('/sync', function(req, res, next) {
+  console.log('sequelize.sync()')
+  sequelize.sync()
+  res.end('sync')
+})
+
 var sessOpt = {
   secret: 'keyboard cat',
   resave: false,
   saveUninitialized: true,
-  cookie: { maxAge: 6000 }
+  cookie: { maxAge: 6000 },
+  store: new SequelizeStore({
+    db: sequelize
+  }),
+
 };
 app.use(session(sessOpt))
 
