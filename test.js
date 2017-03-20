@@ -24,7 +24,26 @@ var SequelizeStore = require('connect-session-sequelize')(session.Store);
 
 var sequelize = new Sequelize('postgresql://localhost/test');
 
+var Session = sequelize.define('Session', {
+  sid: {
+    type: Sequelize.STRING,
+    primaryKey: true
+  },
+  userId: Sequelize.STRING,
+  expires: Sequelize.DATE,
+  data: Sequelize.STRING(50000)
+});
+
+function extendDefaultFields(defaults, session) {
+  return {
+    data: defaults.data,
+    expires: defaults.expires,
+    userId: session.userId
+  };
+}
+
 var app = express()
+
 
 app.get('/sync', function(req, res, next) {
   console.log('sequelize.sync()')
@@ -40,7 +59,7 @@ var sessOpt = {
   store: new SequelizeStore({
     db: sequelize
   }),
-
+  extendDefaultFields: extendDefaultFields
 };
 app.use(session(sessOpt))
 
