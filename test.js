@@ -20,8 +20,6 @@ var http = require('http')
 //   }
 // })
 var app = express()
-var cookieParser = require('cookie-parser')
-app.use(cookieParser())
 var sessOpt = {
   secret: 'keyboard cat',
   resave: false,
