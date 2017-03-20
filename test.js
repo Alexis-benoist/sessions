@@ -22,13 +22,7 @@ var http = require('http')
 // })
 var SequelizeStore = require('connect-session-sequelize')(session.Store);
 
-var sequelize = new Sequelize(
-"database",
-"username",
-"password", {
-  "dialect": "sqlite",
-  "storage": "./session.sqlite"
-});
+var sequelize = new Sequelize('postgresql://localhost/test');
 
 var app = express()
 
