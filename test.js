@@ -56,16 +56,28 @@ var sessOpt = {
   secret: 'keyboard cat',
   resave: false,
   saveUninitialized: true,
-  cookie: { maxAge: 6000 },
+  cookie: { maxAge: 6000 * 1000 },
   store: new SequelizeStore({
     db: sequelize,
+    expiration: 24 * 60 * 60 * 1000,  // ms
     table: 'Session',
     extendDefaultFields: extendDefaultFields
   }),
 };
 app.use(session(sessOpt))
 
+const port = 8000
+const domain = 'http://localhost:' + port
+const makeURL = name => domain + '/' + name
+const makeLink = name => '<a href="' + makeURL(name) + '">' + name + '</a>'
 
+const msg = '\n' +
+  makeLink('logout') + '\n' +
+  makeLink('counter') + '\n'
+
+function end(res, customMsg) {
+  res.end(msg + customMsg)
+}
 app.get('/', function(req, res, next) {
   res.send('Hello world!')
 })
@@ -75,33 +87,33 @@ const getMaxId = () => Session.findAll({
   ],
 })
 
-app.get('/max', function(req, res, next) {
-  getMaxId()
-  .then(rv => res.send(`max ${rv.maxId}`))
+app.get('/login/:id', function(req, res, next) {
+  var sess = req.session;
+  sess.userId = req.params.id
+  sess.views = 1
+  end(res, `welcome to the session demo ${sess.userId}. refresh!`)
 })
+
 app.get('/counter', function(req, res, next) {
   var sess = req.session;
   console.log(sess)
   if (sess.views) {
     sess.views++
-    res.setHeader('Content-Type', 'text/html')
-    res.write('<p>views: ' + sess.views + '</p>')
-    res.write('<p>expires in: ' + (sess.cookie.maxAge / 1000) + 's</p>')
-    res.end()
+    end(res, 'hello user ' + sess.userId + ' we saw you ' + sess.views)
   } else {
-    sess.views = 1
-    getMaxId()
-    .then(userId => {
-      console.log('max', userId.maxId)
-      sess.userId = (userId.maxId || 0) + 1
-      res.end('welcome to the session demo. refresh!')
-    })
+    res.status(403).end('403')
   }
+})
+
+app.get('/logout', function(req, res, next) {
+  var sess = req.session;
+  sess.userId = req.params.id
+  end(res, 'logout for ' + sess.userId)
 })
 
 const server = new http.Server(app);
 
 // listen on port config.port
-server.listen(8000, () => {
-  console.log(`server started on port 8000`);
+server.listen(port, () => {
+  console.log('server started on ' + domain);
 });
