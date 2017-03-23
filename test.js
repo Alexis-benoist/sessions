@@ -29,9 +29,9 @@ var Session = sequelize.define('Session', {
     type: Sequelize.STRING,
     primaryKey: true
   },
-  userId: Sequelize.STRING,
+  userId: Sequelize.INTEGER,
   expires: Sequelize.DATE,
-  data: Sequelize.STRING(50000)
+  data: Sequelize.JSONB
 });
 
 function extendDefaultFields(defaults, session) {
