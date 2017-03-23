@@ -71,15 +71,17 @@ const domain = 'http://localhost:' + port
 const makeURL = name => domain + '/' + name
 const makeLink = name => '<a href="' + makeURL(name) + '">' + name + '</a>'
 
-const msg = '\n' +
-  makeLink('logout') + '\n' +
-  makeLink('counter') + '\n'
+function msg() {
+  return makeLink('login/' +  Math.floor(Math.random() * 10000)) + '<br>' +
+  makeLink('logout') + '<br>' +
+  makeLink('counter') + '<br>'
 
+}
 function end(res, customMsg) {
-  res.end(msg + customMsg)
+  res.end(msg() + customMsg)
 }
 app.get('/', function(req, res, next) {
-  res.send('Hello world!')
+  end(res, 'Hello !')
 })
 const getMaxId = () => Session.findAll({
   attributes: [
@@ -101,13 +103,13 @@ app.get('/counter', function(req, res, next) {
     sess.views++
     end(res, 'hello user ' + sess.userId + ' we saw you ' + sess.views)
   } else {
-    res.status(403).end('403')
+    end('403', res)
   }
 })
 
 app.get('/logout', function(req, res, next) {
   var sess = req.session;
-  sess.userId = req.params.id
+  req.session.destroy();
   end(res, 'logout for ' + sess.userId)
 })
 
