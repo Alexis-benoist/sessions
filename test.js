@@ -29,7 +29,7 @@ var Session = sequelize.define('Session', {
     type: Sequelize.STRING,
     primaryKey: true
   },
-  userId: Sequelize.INTEGER,
+  userId: {type: Sequelize.INTEGER, field: 'user_id'},
   expires: Sequelize.DATE,
   data: Sequelize.JSONB
 });
@@ -69,7 +69,16 @@ app.use(session(sessOpt))
 app.get('/', function(req, res, next) {
   res.send('Hello world!')
 })
+const getMaxId = () => Session.findAll({
+  attributes: [
+    [sequelize.fn('MAX', sequelize.col('user_id')), 'maxId']
+  ],
+})
 
+app.get('/max', function(req, res, next) {
+  getMaxId()
+  .then(rv => res.send(`max ${rv.maxId}`))
+})
 app.get('/counter', function(req, res, next) {
   var sess = req.session;
   console.log(sess)
@@ -81,8 +90,12 @@ app.get('/counter', function(req, res, next) {
     res.end()
   } else {
     sess.views = 1
-    sess.userId = 2
-    res.end('welcome to the session demo. refresh!')
+    getMaxId()
+    .then(userId => {
+      console.log('max', userId.maxId)
+      sess.userId = (userId.maxId || 0) + 1
+      res.end('welcome to the session demo. refresh!')
+    })
   }
 })
 
