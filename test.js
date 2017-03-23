@@ -47,8 +47,9 @@ var app = express()
 
 app.get('/sync', function(req, res, next) {
   console.log('sequelize.sync()')
-  sequelize.sync()
-  res.end('sync')
+  sequelize.sync({force: true})
+  .then(() => res.end('sync'))
+
 })
 
 var sessOpt = {
@@ -57,9 +58,10 @@ var sessOpt = {
   saveUninitialized: true,
   cookie: { maxAge: 6000 },
   store: new SequelizeStore({
-    db: sequelize
+    db: sequelize,
+    table: 'Session',
+    extendDefaultFields: extendDefaultFields
   }),
-  extendDefaultFields: extendDefaultFields
 };
 app.use(session(sessOpt))
 
@@ -79,6 +81,7 @@ app.get('/counter', function(req, res, next) {
     res.end()
   } else {
     sess.views = 1
+    sess.userId = 2
     res.end('welcome to the session demo. refresh!')
   }
 })
