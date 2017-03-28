@@ -3,7 +3,7 @@ var express = require('express')
 var Sequelize = require('sequelize')
 var session = require('express-session');
 var http = require('http')
-
+// https://github.com/expressjs/session/pull/159
 // initalize sequelize with session store
 
 // Access the session as req.session
@@ -97,6 +97,7 @@ app.get('/login/:id', function(req, res, next) {
 })
 
 app.get('/counter', function(req, res, next) {
+  console.log(req)
   var sess = req.session;
   console.log(sess)
   if (sess.views) {
@@ -107,6 +108,10 @@ app.get('/counter', function(req, res, next) {
   }
 })
 
+app.get('/dump', function(req, res, next) {
+  console.log(req)
+  res.end('de')
+})
 app.get('/logout', function(req, res, next) {
   var sess = req.session;
   req.session.destroy();
@@ -119,3 +124,9 @@ const server = new http.Server(app);
 server.listen(port, () => {
   console.log('server started on ' + domain);
 });
+
+
+// TODO
+// cannot login again when the user is already logged in
+// cannot logout if already login
+//
